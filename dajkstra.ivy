@@ -1,0 +1,35 @@
+#lang ivy1.7
+
+# try running ivy_check, ivy_check diagnose=true, and ivy_check trace=true
+# for more on Ivy, visit: http://microsoft.github.io/ivy/
+
+type server
+type client
+
+relation connect(X:client, Y:server)
+relation b(X:server)
+
+after init {
+    connect(X,Y) := false;
+    b(X) := false;
+}
+
+action conn(s:server, c:client) = {
+   if ~b(s) {
+        b(s) := true;
+        connect(c,s) := true;
+    };
+    # assert b(s);  # Ivy can prove this without any induictive invariant
+    assert forall S:server, C1:client, C2:client. connect(C1,S) & connect(C2,S) -> C1 = C2;
+}
+export conn
+
+action disconnect(s:server, c:client) = {
+    require connect(c,s);
+    connect(c,s) := false;
+    b(s) := false;
+}
+export disconnect
+
+invariant [unique_connections] forall S:server, C1:client, C2:client. connect(C1,S) & connect(C2,S) -> C1 = C2
+invariant [conn_b] forall S:server, C:client. connect(C,S) -> b(S)
