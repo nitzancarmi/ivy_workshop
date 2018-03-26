@@ -3,15 +3,37 @@
 # try running ivy_check, ivy_check diagnose=true, and ivy_check trace=true
 # for more on Ivy, visit: http://microsoft.github.io/ivy/
 
-type server
-type client
+type computer
+type stat
+type num
 
-relation connect(X:client, Y:server)
-relation b(X:server)
+relation b(X:computer)
+relation c(X:computer)
+relation current(S:stat, P:computer)
+relation isk(i:computer, k:num)
 
 after init {
-    connect(X,Y) := false;
-    b(X) := false;
+    b(X) := true;
+    c(X) := true;
+    current(S,P):=false;
+}
+
+axiom forall P:computer, S1:stat, S2:stat . current(S1,P) & current(S2,P) -> S1 = S2;
+
+action choosek(i:computer,k:num) {
+    isk(i,k):=true;
+}
+invariant [unique_K] forall I1:computer, I2:computer, K:num . isk(I1,K) & isk(I2,K) -> I1 = I2
+
+action Li0(i:computer) {
+    requires b(i):=true;
+    b(i) := false;
+}
+
+action Li1(i:computer, k:num) {
+    requires b(i):=false & c(i):=true;
+    if ~isk(i,k):
+    
 }
 
 action conn(s:server, c:client) = {
