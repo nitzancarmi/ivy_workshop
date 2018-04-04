@@ -4,36 +4,37 @@
 # for more on Ivy, visit: http://microsoft.github.io/ivy/
 
 type computer
-type stat
-type num
 
 relation b(X:computer)
 relation c(X:computer)
-relation current(S:stat, P:computer)
-relation isk(i:computer, k:num)
+relation pc_li0(P:computer)
+relation pc_li1(P:computer)
+var k:computer
 
 after init {
     b(X) := true;
     c(X) := true;
-    current(S,P):=false;
+    pc_li0(P) := true;
+	pc_li1(P) := false;
 }
 
-axiom forall P:computer, S1:stat, S2:stat . current(S1,P) & current(S2,P) -> S1 = S2;
+invariant forall P:computer S1:stat, S2:stat . current(S1,P) & current(S2,P) -> S1 = S2;
 
-action choosek(i:computer,k:num) {
-    isk(i,k):=true;
-}
-invariant [unique_K] forall I1:computer, I2:computer, K:num . isk(I1,K) & isk(I2,K) -> I1 = I2
-
-action Li0(i:computer) {
-    requires b(i):=true;
+action li0(i:computer) {
+    requires pc_li0(i);
     b(i) := false;
+	pc_li0(i):=false;
+	pc_li1(i):=true;
 }
 
-action Li1(i:computer, k:num) {
-    requires b(i):=false & c(i):=true;
-    if ~isk(i,k):
-    
+action li1(i:computer) {
+    requires pc_li1(i);
+	pc_li1 := false;
+    if i=k {
+		pc_li4(i):= true;
+	} else {
+		pc_li2(i):=true;
+	}
 }
 
 action conn(s:server, c:client) = {
