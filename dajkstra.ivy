@@ -7,52 +7,119 @@ type computer
 
 relation b(X:computer)
 relation c(X:computer)
-relation pc_li0(P:computer)
-relation pc_li1(P:computer)
+relation pc0(P:computer)
+relation pc1(P:computer)
+relation pc2(P:computer)
+relation pc3(P:computer)
+relation pc4(P:computer)
+relation pc7(P:computer)
+relation pc89(P:computer)
+relation pc12(P:computer)
+relation pc12b(P:computer)
+relation pc14(P:computer)
 var k:computer
 
 after init {
     b(X) := true;
     c(X) := true;
-    pc_li0(P) := true;
-	pc_li1(P) := false;
+    pc0(P) := true;
+    pc1(P) := false;
+    pc2(P) := false;
+    pc3(P) := false;
+    pc4(P) := false;
+    pc7(P) := false;
+    pc89(P) := false;
+    pc12(P) := false;
+    pc12b(P) := false;
+    pc14(P) := false;
 }
 
-invariant forall P:computer S1:stat, S2:stat . current(S1,P) & current(S2,P) -> S1 = S2;
-
-action li0(i:computer) {
-    requires pc_li0(i);
+action f_pc0(i:computer) {
+    requires pc0(i);
     b(i) := false;
-	pc_li0(i):=false;
-	pc_li1(i):=true;
+    pc0(i):=false;
+    pc1(i):=true;
 }
+export f_pc0
 
-action li1(i:computer) {
-    requires pc_li1(i);
-	pc_li1 := false;
+action f_pc1(i:computer) {
+    requires pc1(i);
+    pc1(i) := false;
     if i=k {
-		pc_li4(i):= true;
-	} else {
-		pc_li2(i):=true;
-	}
+        pc7(i):= true;
+    } else {
+	pc2(i):=true;
+    }
 }
+export f_pc1
 
-action conn(s:server, c:client) = {
-   if ~b(s) {
-        b(s) := true;
-        connect(c,s) := true;
-    };
-    # assert b(s);  # Ivy can prove this without any induictive invariant
-    assert forall S:server, C1:client, C2:client. connect(C1,S) & connect(C2,S) -> C1 = C2;
+action f_pc2(i:computer) {
+    requires pc2(i);
+    c(i) := true;
+    pc2(i):=false;
+    pc3(i):=true;
 }
-export conn
+export f_pc2
 
-action disconnect(s:server, c:client) = {
-    require connect(c,s);
-    connect(c,s) := false;
-    b(s) := false;
+
+action f_pc3(i:computer) {
+    requires pc3(i);
+    pc3(i) := false;
+    if b(k) {
+        k := i;
+    }
+    pc4(i) := true;
 }
-export disconnect
+export f_pc3
 
-invariant [unique_connections] forall S:server, C1:client, C2:client. connect(C1,S) & connect(C2,S) -> C1 = C2
-invariant [conn_b] forall S:server, C:client. connect(C,S) -> b(S)
+action f_pc4(i:computer) {
+    requires pc4(i);
+    pc4(i):= false;
+    pc1(i) := true;
+}
+export f_pc4
+
+action f_pc7(i:computer) {
+    requires pc7(i);
+    pc7(i) := false;
+    c(i) := false;
+    pc89(i):=true;
+}
+export f_pc7
+
+action f_pc89(i:computer) {
+    requires pc89(i);
+    pc89(i) := false;
+
+    if forall I:computer . I != i & c(I)=false {
+        pc1(i) := true;
+    } else {
+	pc12(i) := true;
+    }
+}
+export f_pc89
+
+invariant [critical_section] forall C1:computer, C2:computer. pc12(C1) & pc12(C2) -> C1 = C2
+
+action f_pc12a(i:computer) {
+    requires pc12(i);
+    c(i):=true;
+    pc12(i):=false;
+    pc12b(i) := true;
+}
+export f_pc12a
+
+action f_pc12b(i:computer) {
+    requires pc12b(i);
+    pc12b(i) := false;
+    b(i) := true;
+    pc14(i):=true;
+}
+export f_pc12b
+
+action f_pc14(i:computer) {
+    requires pc14(i);
+    pc14(i):=false;
+    pc0(i):=true;
+}
+export f_pc14
