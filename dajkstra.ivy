@@ -17,6 +17,10 @@ relation pc89(P:computer)
 relation pc12(P:computer)
 relation pc12b(P:computer)
 relation pc14(P:computer)
+
+relation checked(I:computer,J:computer)
+relation check_result(I:computer,J:computer)
+
 var k:computer
 
 after init {
@@ -32,6 +36,11 @@ after init {
     pc12(P) := false;
     pc12b(P) := false;
     pc14(P) := false;
+
+    checked(I,J) := false;
+#    checked(I,I) :=true;
+    check_result(I,J) := false;
+#    check_result(I,I) :=true;
 }
 
 action f_pc0(i:computer) = {
@@ -88,23 +97,53 @@ action f_pc7(i:computer) = {
     require pc7(i);
     pc7(i) := false;
     c(i) := false;
+
+    checked(i,J) := false; 
+    checked(i,i) := true; 
+    check_result(i,J) := false; 
+    check_result(i,i) := true; 
     pc89(i):=true;
 }
 export f_pc7
 invariant [pc7_inv] forall P:computer . pc7(P) -> ~b(P)
 
-action f_pc89(i:computer) = {
-    require pc89(i);
-    pc89(i) := false;
-
-    if (forall P:computer.~c(P) & ~c(i) -> i=P) {
-	pc12(i) := true;
-    } else {
-        pc1(i) := true;
-    }
+action f_pc89_update(i:computer, j:computer) = {
+    require (~checked(i,j) & j ~= i & pc89(i));
+   
+    checked(i,j) := true;
+    check_result(i,j) := c(j); 
 }
-export f_pc89
+export f_pc89_update
+
+action f_pc89_passed(i:computer) = {
+    require ((forall J:computer.(checked(i,J) & check_result(i,J))) & pc89(i));
+
+    checked(i,J):=false;
+    checked(i,i) := true;
+    check_result(i,J) := false;
+    check_result(i,i) := true; 
+
+    pc89(i) := false;
+    pc12(i) := true; 
+}
+export f_pc89_passed
+
+action f_pc89_failed(i:computer) = {
+    require ((exists J:computer. (checked(i,J) & ~check_result(i,J))) & pc89(i));
+
+    checked(i,J):=false;
+    checked(i,i) := true;
+    check_result(i,J):=false;
+    check_result(i,i):=true;
+
+    pc89(i) := false;
+    pc1(i) := true; 
+}
+export f_pc89_failed
 invariant [pc89_inv] forall P:computer . pc89(P) -> ~b(P) & ~c(P)
+#invariant [pc89_check_res] forall P:computer, I:computer . pc89(P) & P~= I & ~c(I) &  -> ~check_result(P,I)
+invariant [pc89_check_res2] forall P:computer, I:computer . P~= I & ~checked(P,I) -> ~check_result(P,I)
+invariant [only_check_pc89] forall P:computer, I:computer . P~= I & ~pc89(P) -> ~checked(P,I)
 
 action f_pc12a(i:computer) = {
     require pc12(i);
