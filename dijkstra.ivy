@@ -144,6 +144,8 @@ invariant [pc89_inv] forall P:computer . pc89(P) -> ~b(P) & ~c(P)
 #invariant [pc89_check_res] forall P:computer, I:computer . pc89(P) & P~= I & ~c(I) &  -> ~check_result(P,I)
 invariant [pc89_check_res2] forall P:computer, I:computer . P~= I & ~checked(P,I) -> ~check_result(P,I)
 invariant [only_check_pc89] forall P:computer, I:computer . P~= I & ~pc89(P) -> ~checked(P,I)
+invariant [check_result_pc89] forall P:computer, I:computer . P~= I & pc89(P) & check_result(P,I) -> ~pc12(I)
+invariant [check_result2_pc89] forall P:computer, I:computer . P~= I & pc89(P) & check_result(P,I) -> ~check_result(I,P)
 
 action f_pc12a(i:computer) = {
     require pc12(i);
