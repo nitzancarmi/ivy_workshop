@@ -1,10 +1,18 @@
 #lang ivy1.7
 
+# Authors: Shani Gozan, Nitzan Carmi, Amos Arbiv
+
+# This program validates the correctenss of Dijkstra's algorithm
+# for mutual exclusion.
+# For the original paper, see:
+# http://www.di.ens.fr/~pouzet/cours/systeme/bib/dijkstra.pdf
+
 # try running ivy_check, ivy_check diagnose=true, and ivy_check trace=true
 # for more on Ivy, visit: http://microsoft.github.io/ivy/
 
 type computer
 
+# State machine, corresponding to program counter in psuedo-code
 relation b(P:computer)
 relation c(P:computer)
 relation pc0(P:computer)
@@ -112,6 +120,8 @@ action f_pc89_update(i:computer, j:computer) = {
 }
 export f_pc89_update
 
+# This function should be accessed only in case all
+# checks were satisfied
 action f_pc89_passed(i:computer) = {
     require ((forall J:computer.(checked(i,J) & check_result(i,J))) & pc89(i));
 
@@ -125,6 +135,8 @@ action f_pc89_passed(i:computer) = {
 }
 export f_pc89_passed
 
+# It suffice that a single check failed, to enter that function 
+# and fail the whole "for" loop stage.
 action f_pc89_failed(i:computer) = {
     require ((exists J:computer. (checked(i,J) & ~check_result(i,J))) & pc89(i));
 
@@ -170,6 +182,7 @@ action f_pc14(i:computer) = {
 export f_pc14
 invariant [pc14_inv] forall P:computer . pc14(P) -> b(P) & c(P)
 
+# These invariants make sure that exactly one state is active at each stage of the algorithm.
 invariant [pc_is_active] forall P:computer. pc0(P)|pc1(P)|pc2(P)|pc3(P)|pc4(P)|pc7(P)|pc89(P)|pc12(P)|pc12b(P)|pc14(P)
 invariant [unique_pc0] forall P:computer. pc0(P) -> ~(pc1(P)|pc2(P)|pc3(P)|pc4(P)|pc7(P)|pc89(P)|pc12(P)|pc12b(P)|pc14(P))
 invariant [unique_pc1] forall P:computer. pc1(P) -> ~(pc0(P)|pc2(P)|pc3(P)|pc4(P)|pc7(P)|pc89(P)|pc12(P)|pc12b(P)|pc14(P))
